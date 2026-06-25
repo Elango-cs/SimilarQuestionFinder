@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuestionMind AI - Similar Question Finder & Auto-Tagging</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- MAIN WRAPPER -->
+    <div id="app-root">
+        
+        <!-- 1. AUTH VIEW (LOGIN / SIGNUP) -->
+        <div id="auth-view" class="auth-view hidden">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="logo">
+                        <i class="fa-solid fa-brain-circuit brain-icon"></i>
+                        <span>QuestionMind <span class="ai-badge">AI</span></span>
+                    </div>
+                    <p id="auth-subtitle">Discover duplicates and organize study questions with local AI</p>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form">
+                    <h2>Welcome Back</h2>
+                    <div class="form-group">
+                        <label for="login-username"><i class="fa-regular fa-user"></i> Username</label>
+                        <input type="text" id="login-username" placeholder="Enter username" required minlength="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+                        <input type="password" id="login-password" placeholder="Enter password" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <span>Login</span> <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </button>
+                    <p class="auth-switch">Don't have an account? <a href="#" id="go-to-signup">Sign up</a></p>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="signup-form" class="auth-form hidden">
+                    <h2>Create Account</h2>
+                    <div class="form-group">
+                        <label for="signup-username"><i class="fa-regular fa-user"></i> Username</label>
+                        <input type="text" id="signup-username" placeholder="Choose a username" required minlength="3">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password"><i class="fa-solid fa-lock"></i> Password</label>
+                        <input type="password" id="signup-password" placeholder="Choose a secure password (6+ chars)" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-accent btn-block">
+                        <span>Sign Up</span> <i class="fa-solid fa-user-plus"></i>
+                    </button>
+                    <p class="auth-switch">Already have an account? <a href="#" id="go-to-login">Log in</a></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. APP VIEW (DASHBOARD & CORE APP) -->
+        <div id="app-view" class="app-view hidden">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <i class="fa-solid fa-brain-circuit logo-icon"></i>
+                    <span class="logo-text">QuestionMind <span class="ai-badge">AI</span></span>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li>
+                            <a href="#" class="nav-link active" data-section="dashboard">
+                                <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link" data-section="add-question">
+                                <i class="fa-solid fa-circle-plus"></i> <span>Add Question</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link" data-section="search">
+                                <i class="fa-solid fa-magnifying-glass"></i> <span>Semantic Search</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link" data-section="tags">
+                                <i class="fa-solid fa-tags"></i> <span>Manage Tags</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="user-profile">
+                        <div class="user-avatar">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        <div class="user-info">
+                            <span id="user-display-name" class="username">Student</span>
+                            <span class="user-role">Member</span>
+                        </div>
+                    </div>
+                    <button id="logout-btn" class="logout-btn" title="Log Out">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Top Header -->
+                <header class="app-header">
+                    <div class="header-title">
+                        <h1 id="current-section-title">Dashboard</h1>
+                        <p id="current-section-desc">Quick statistics and recent study question activities.</p>
+                    </div>
+                </header>
+
+                <!-- Dynamic Content Sections -->
+                <div class="content-body">
+                    
+                    <!-- A. DASHBOARD SECTION -->
+                    <section id="dashboard-section" class="app-section">
+                        <!-- Stats Grid -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon icon-blue">
+                                    <i class="fa-solid fa-clipboard-question"></i>
+                                </div>
+                                <div class="stat-details">
+                                    <h3 id="stat-total-questions">0</h3>
+                                    <p>Total Questions</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon icon-purple">
+                                    <i class="fa-solid fa-tag"></i>
+                                </div>
+                                <div class="stat-details">
+                                    <h3 id="stat-total-tags">0</h3>
+                                    <p>Active Tags</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon icon-green">
+                                    <i class="fa-solid fa-chart-line"></i>
+                                </div>
+                                <div class="stat-details">
+                                    <h3 id="stat-match-accuracy">all-MiniLM</h3>
+                                    <p>Embedding Engine</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Grid (Recent items & fast action) -->
+                        <div class="dashboard-grid">
+                            <div class="dashboard-panel panel-large">
+                                <div class="panel-header">
+                                    <h2><i class="fa-solid fa-list-check"></i> Recent Study Questions</h2>
+                                    <button class="btn btn-sm btn-outline nav-shortcut" data-target="add-question">
+                                        <i class="fa-solid fa-plus"></i> Add New
+                                    </button>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="recent-questions-loader" class="loader-container">
+                                        <div class="loader"></div>
+                                        <p>Fetching questions...</p>
+                                    </div>
+                                    <div id="empty-questions-msg" class="empty-state hidden">
+                                        <i class="fa-regular fa-folder-open"></i>
+                                        <p>No questions added yet. Start by posting your first study question!</p>
+                                        <button class="btn btn-accent nav-shortcut" data-target="add-question">Create Question</button>
+                                    </div>
+                                    <div id="questions-feed" class="questions-feed"></div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-panel panel-small">
+                                <div class="panel-header">
+                                    <h2><i class="fa-solid fa-lightbulb"></i> Quick Search tip</h2>
+                                </div>
+                                <div class="panel-body info-panel">
+                                    <p><strong>Semantic Search</strong> goes beyond exact keyword matching. Try inputting a fully formed question or sentence.</p>
+                                    <div class="tip-card">
+                                        <div class="tip-title"><i class="fa-solid fa-terminal"></i> Try searching:</div>
+                                        <p class="tip-example">"How do I sort a list in Python?"</p>
+                                        <p class="tip-match">Matches: "Methods to organize arrays in python" even if words differ!</p>
+                                    </div>
+                                    <button class="btn btn-secondary btn-block nav-shortcut" data-target="search">Go to Semantic Search</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- B. ADD QUESTION SECTION -->
+                    <section id="add-question-section" class="app-section hidden">
+                        <div class="editor-grid">
+                            <!-- Left Column: Input Question -->
+                            <div class="editor-main">
+                                <div class="form-container glass-panel">
+                                    <h2>Enter Study Question</h2>
+                                    <p class="form-subtitle">Type your question below. AI will analyze the text to recommend tags and find duplicate/similar questions in real-time.</p>
+                                    
+                                    <div class="form-group">
+                                        <textarea id="question-textarea" rows="8" placeholder="Type your biology, math, history or programming question here... E.g., What is the definition of photosynthesis and its formula?"></textarea>
+                                    </div>
+
+                                    <div class="editor-actions">
+                                        <button id="analyze-btn" class="btn btn-secondary">
+                                            <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Analyze Text</span>
+                                        </button>
+                                        <button id="submit-question-btn" class="btn btn-primary">
+                                            <i class="fa-solid fa-paper-plane"></i> <span>Submit to Database</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Live AI Analysis -->
+                            <div class="editor-sidebar">
+                                <!-- Suggested Tags Panel -->
+                                <div class="glass-panel sidebar-card">
+                                    <h3><i class="fa-solid fa-robot"></i> AI Recommended Tags</h3>
+                                    <p class="card-desc">Suggested categories based on semantic match score.</p>
+                                    
+                                    <div id="ai-tags-loader" class="loader-container hidden">
+                                        <div class="loader"></div>
+                                        <p>Analyzing context...</p>
+                                    </div>
+                                    
+                                    <div id="ai-tags-default-msg" class="empty-state">
+                                        <i class="fa-solid fa-keyboard"></i>
+                                        <p>Start typing to see AI tag recommendations...</p>
+                                    </div>
+
+                                    <div id="suggested-tags-container" class="suggested-tags-list hidden"></div>
+                                </div>
+
+                                <!-- Similar Questions Panel -->
+                                <div class="glass-panel sidebar-card">
+                                    <h3><i class="fa-solid fa-clone"></i> Similar Questions in Database</h3>
+                                    <p class="card-desc">Real-time semantic duplicates check.</p>
+                                    
+                                    <div id="ai-similarity-loader" class="loader-container hidden">
+                                        <div class="loader"></div>
+                                        <p>Searching database...</p>
+                                    </div>
+                                    
+                                    <div id="ai-similarity-default-msg" class="empty-state">
+                                        <i class="fa-solid fa-database"></i>
+                                        <p>No questions to compare yet. Analyze text to view matches.</p>
+                                    </div>
+
+                                    <div id="similar-questions-container" class="similar-questions-sidebar hidden"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- C. SEMANTIC SEARCH SECTION -->
+                    <section id="search-section" class="app-section hidden">
+                        <div class="search-container glass-panel">
+                            <div class="search-bar-row">
+                                <div class="search-input-wrapper">
+                                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                                    <input type="text" id="search-query-input" placeholder="Type a concept, phrase, or entire study question to search...">
+                                    <button id="clear-search-btn" class="clear-btn hidden"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <button id="search-btn" class="btn btn-primary">Search</button>
+                            </div>
+
+                            <!-- Search Parameters -->
+                            <div class="search-settings">
+                                <div class="slider-group">
+                                    <div class="slider-header">
+                                        <span class="label"><i class="fa-solid fa-sliders"></i> Similarity Threshold</span>
+                                        <span id="threshold-val" class="value">35%</span>
+                                    </div>
+                                    <input type="range" id="threshold-slider" min="10" max="90" value="35" class="slider">
+                                </div>
+                                <div class="search-info-text">
+                                    <i class="fa-solid fa-circle-info"></i> Adjust the threshold to filter out looser semantic matches.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Area -->
+                        <div class="search-results-panel">
+                            <div class="results-header">
+                                <h2 id="search-results-count">Search Results</h2>
+                            </div>
+                            
+                            <div id="search-results-loader" class="loader-container hidden">
+                                <div class="loader"></div>
+                                <p>Running semantic matching model locally...</p>
+                            </div>
+                            
+                            <div id="search-empty-state" class="empty-state">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <p>Enter a query above to scan the database using sentence embedding similarity.</p>
+                            </div>
+
+                            <div id="search-results-feed" class="questions-feed"></div>
+                        </div>
+                    </section>
+
+                    <!-- D. MANAGE TAGS SECTION -->
+                    <section id="tags-section" class="app-section hidden">
+                        <div class="tags-layout">
+                            <!-- Left Column: Add Custom Tag -->
+                            <div class="tag-form-wrapper">
+                                <div class="glass-panel">
+                                    <h2>Create Custom Tag</h2>
+                                    <p class="panel-subtitle">Add a specialized subject. AI will automatically index this tag and start matching new questions against it.</p>
+                                    
+                                    <form id="create-tag-form">
+                                        <div class="form-group">
+                                            <label for="tag-name-input">Tag Name</label>
+                                            <input type="text" id="tag-name-input" placeholder="E.g., Quantum Mechanics" required minlength="2" maxlength="30">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="tag-desc-input">Description</label>
+                                            <textarea id="tag-desc-input" rows="4" placeholder="Briefly describe this category to help the embedding model understand its context..." required maxlength="200"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-accent btn-block">
+                                            <i class="fa-solid fa-tag"></i> Generate Embedding & Save
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Tag Cloud Grid -->
+                            <div class="tags-grid-wrapper">
+                                <div class="glass-panel">
+                                    <h2>Existing Categories</h2>
+                                    <p class="panel-subtitle">Purple badges are built-in system tags. Cyan badges are custom user-defined tags.</p>
+                                    
+                                    <div id="tags-list-loader" class="loader-container">
+                                        <div class="loader"></div>
+                                        <p>Loading tags...</p>
+                                    </div>
+                                    
+                                    <div id="tags-grid" class="tags-grid hidden"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </main>
+        </div>
+
+    </div>
+
+    <!-- Main JS Application Logic -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
