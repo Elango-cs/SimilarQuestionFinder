@@ -2,8 +2,7 @@
 
 An AI-powered web application that helps students and educators find semantically similar study questions and automatically categorizes them. The system uses a local, open-source embedding model to perform context-aware matching and zero-shot tag suggestions.
 
-## 📋 Selected Assignment Option
-**Option B**: Similar Question Finder with Auto-Tagging
+Similar Question Finder with Auto-Tagging
 
 ---
 
