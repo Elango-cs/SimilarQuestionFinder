@@ -1,6 +1,22 @@
+import os
+import sys
+
+# Limit PyTorch memory usage and threads to fit in Render's 512MB limit
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 import numpy as np
+import torch
+import gc
 from sentence_transformers import SentenceTransformer
 from typing import List
+
+# Limit threads in PyTorch execution engine
+torch.set_num_threads(1)
+torch.set_num_interop_threads(1)
 
 class AIService:
     _model = None
@@ -8,10 +24,18 @@ class AIService:
     @classmethod
     def get_model(cls):
         if cls._model is None:
-            # We use a lightweight and powerful local embedding model.
-            # Downloads once on startup and caches locally.
             print("Loading SentenceTransformer model ('all-MiniLM-L6-v2')...")
+            # Disable grad calculation globally to save memory
+            torch.set_grad_enabled(False)
+            
             cls._model = SentenceTransformer("all-MiniLM-L6-v2")
+            
+            # Disable grad on model parameters
+            for param in cls._model.parameters():
+                param.requires_grad = False
+                
+            # Force garbage collection
+            gc.collect()
             print("Model loaded successfully!")
         return cls._model
 

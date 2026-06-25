@@ -1,6 +1,14 @@
 import json
 import os
 import sys
+
+# Limit PyTorch memory usage and threads to fit in Render's 512MB limit
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 from contextlib import asynccontextmanager
 from typing import List, Optional
 
