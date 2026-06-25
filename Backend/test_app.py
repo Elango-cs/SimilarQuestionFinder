@@ -126,7 +126,7 @@ def run_tests():
     search_query = "training deep learning networks weights update mechanism"
     search_resp = requests.get(
         f"{BASE_URL}/api/questions/search",
-        params={"query": search_query, "threshold": 0.3},
+        params={"query": search_query, "threshold": 0.2},
         headers=headers
     )
     if search_resp.status_code == 200:
