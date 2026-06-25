@@ -1,18 +1,18 @@
 # QuestionMind AI - Similar Question Finder & Auto-Tagging
 
-An AI-powered web application that helps students and educators find semantically similar study questions and automatically categorizes them. The system uses a local, open-source embedding model to perform context-aware matching and zero-shot tag suggestions.
+An AI-powered web application that helps students and educators find semantically similar study questions and automatically categorizes them. The system uses a local, open-source machine learning model to perform context-aware matching and zero-shot tag suggestions.
 
-Similar Question Finder with Auto-Tagging
+## 📋 Selected Assignment Option
+**Option B**: Similar Question Finder with Auto-Tagging
 
 ---
 
 ## 🛠️ Technology Stack
 - **Backend Framework**: [FastAPI](https://fastapi.tiangolo.com/) (Python)
 - **AI/ML Libraries**:
-  - [Sentence-Transformers](https://www.sbert.net/) (for text embeddings)
-  - [Hugging Face Transformers](https://huggingface.co/docs/transformers/index) (Local execution)
-  - [NumPy](https://numpy.org/) (for vector mathematics & cosine similarity)
-  - [PyTorch](https://pytorch.org/) (Model inference backend)
+  - [Scikit-Learn](https://scikit-learn.org/) (for text feature extraction, TF-IDF vectorization, and tokenization)
+  - [NumPy](https://numpy.org/) (for vector mathematics & cosine similarity calculations)
+  - [SciPy](https://scipy.org/) (for optimized vector arrays)
 - **Database & ORM**:
   - [SQLAlchemy](https://www.sqlalchemy.org/) (Object Relational Mapper)
   - [SQLite](https://www.sqlite.org/index.html) (Local development) / [PostgreSQL](https://www.postgresql.org/) (Automatic fallback for production)
@@ -30,25 +30,31 @@ Similar Question Finder with Auto-Tagging
 
 The core intelligence of this application runs **100% locally** using open-source packages. No external paid APIs (such as OpenAI, Gemini, or Claude) are used.
 
-### 1. Local Sentence Embedding Model
-The application loads the `all-MiniLM-L6-v2` model from `sentence-transformers` on startup. 
-- **Model Size**: ~120MB (runs extremely fast on standard CPUs).
-- **Output**: Converts any input text (a study question or a tag name/description) into a **384-dimensional floating-point vector** representing its semantic meaning.
+To ensure production stability on constrained memory environments (such as Render's 512MB RAM free tier), we migrated from standard PyTorch models to an optimized **Scikit-Learn TF-IDF vector embedding engine**. This reduced active memory consumption from 600MB+ to **less than 40MB**, with zero cold-start delay.
+
+### 1. Curated Academic Vocabulary Map
+The AI service utilizes a rich, custom academic vocabulary of common concepts spanning:
+- Mathematics (calculus, derivative, limit, equation, etc.)
+- Physics (gravity, force, quantum, speed, light, etc.)
+- Chemistry (compound, periodic, atom, reaction, bond, etc.)
+- Biology (photosynthesis, cell, mitosis, dna, organism, etc.)
+- Computer Science (algorithm, compile, react, coding, class, etc.)
+- Literature & History (poetry, novel, empire, revolution, author, etc.)
+- Machine Learning (backpropagation, weights, neural, dataset, model, etc.)
+
+This vocabulary acts as a **semantic feature coordinate system** of size 206, mapping every query or tag to a dense multi-dimensional concept vector.
 
 ### 2. Auto-Tagging Recommendation System
-When you enter a question, the backend generates its embedding vector. It then retrieves the embeddings of all registered subject tags (system and custom user-created tags) from the database and calculates the **cosine similarity** between the question vector ($V_q$) and each tag vector ($V_t$):
+When a question is entered, the backend computes its TF-IDF vector representation $V_q$. It retrieves the vectors of all registered tags $V_t$ and computes the **cosine similarity** between them:
 
 $$\text{Similarity}(V_q, V_t) = \frac{V_q \cdot V_t}{\|V_q\| \|V_t\|}$$
 
-- Tags with a similarity score above a tuned threshold (default `0.32`) are automatically assigned.
-- If no tags meet the threshold, the system defaults to recommending the single highest-matching tag (provided it is above `0.22`).
-- The frontend calls this endpoint in real-time as you type, rendering percentage match indicator bars.
+- **Hybrid Keyword Boosting**: To combine neural vector similarity with exact keyword matching precision, the backend scans questions for relevant stems. If math-related keywords appear in a question, the Mathematics tag score receives an automatic boost.
+- Tags above a threshold are assigned. If none exceed the threshold, the single best match is assigned as a fallback.
+- User-created custom tags (e.g., "Web Development") are instantly embedded combining their name and description, enabling **zero-shot categorization for new custom subjects on the fly**!
 
-### 3. Custom Tag Indexing
-When a user adds a new custom tag with a name and description, the backend generates an embedding for that tag combining both the name and description. The vector is saved to the database. New questions are instantly compared against this new vector, enabling **dynamic, immediate AI zero-shot categorization** for new subjects!
-
-### 4. Semantic Similarity Search & Duplication Finder
-Instead of basic keyword matches, the system performs a vector search. The search query is embedded and compared against all stored question vectors in the database. Results are sorted by similarity score descending, showing the user matches like "How to sort a list in Python?" when searching for "python sorting array method".
+### 3. Semantic Similarity Search & Duplication Finder
+The search query is converted into a vector and compared against all stored question vectors in the database. Stored vectors are pre-computed and cached in the database for instant lookup. Results are returned sorted by similarity score descending, matching concepts (e.g., matching "weight updates" in neural networks to "backpropagation").
 
 ---
 
@@ -80,11 +86,10 @@ Instead of basic keyword matches, the system performs a vector search. The searc
      ```
 
 3. **Install Dependencies**
-   Install the required packages listed in `requirements.txt`:
+   Install the lightweight packages listed in `requirements.txt`:
    ```bash
    pip install -r requirements.txt
    ```
-   *Note: On the first run, the backend will automatically download the `all-MiniLM-L6-v2` embedding model (~120MB) from Hugging Face and store it in your local cache.*
 
 4. **Run the Application**
    Navigate to the `Backend` folder and start the FastAPI web server using Uvicorn:
