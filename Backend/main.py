@@ -1,7 +1,13 @@
 import json
 import os
+import sys
 from contextlib import asynccontextmanager
 from typing import List, Optional
+
+# Ensure Backend directory is in Python path for local package imports
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 from fastapi import FastAPI, Depends, HTTPException, status, Query
 from fastapi.middleware.cors import CORSMiddleware
